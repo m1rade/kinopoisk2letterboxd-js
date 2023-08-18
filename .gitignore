@@ -1,0 +1,9 @@
+/node_modules
+
+/build
+
+/data
+
+/.cache
+/.vscode
+/.idea
