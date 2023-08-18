@@ -27,7 +27,7 @@ const URL = "https://www.kinopoisk.ru/user/13771316/votes/list/vs/vote/page/2";
                             .text()
                             .replace(/, \d+:\d+/, "")
                             .replace(
-                                /(0?[1-9]|[12][0-9])\.(0?[1-9]|[12][0-9]|3[01])\.((19|20)\d\d)/g,
+                                /(0?[1-9]|[123][0-9])\.(0?[1-9]|[12][0-9]|3[01])\.((19|20)\d\d)/g,
                                 (match, dd, mm, yyyy) => `${yyyy}-${mm}-${dd}`
                             );
     
