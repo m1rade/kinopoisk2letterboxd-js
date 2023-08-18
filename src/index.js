@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { getPageFromUrl } from "./helpers/getPageFromUrl.js";
-import { saveDataToCSV } from "./helpers/saveDataToCSV.js";
+import { json2csv } from "json-2-csv";
+import { saveDataToFile } from "./helpers/saveDataToFile.js";
 
 const URL = "https://www.kinopoisk.ru/user/13771316/votes/list/vs/vote/page/2/#list";
 
@@ -27,7 +28,10 @@ const URL = "https://www.kinopoisk.ru/user/13771316/votes/list/vs/vote/page/2/#l
                 }
             });
 
-        saveDataToCSV(films);
+        // saveDataToCSV(films);
+        const csv = await json2csv(films, { excelBOM: true, prependHeader: false });
+        await saveDataToFile(csv);
+
     } catch (error) {
         throw new Error(error);
     }
