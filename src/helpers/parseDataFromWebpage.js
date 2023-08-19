@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { cutYearFromName, formatDate } from "./utils/formatters.js";
+import { cutYearFromName, formatDate } from "../utils/formatters.js";
 
 export function parseDataFromWebpage(webpage, films) {
     const $ = cheerio.load(webpage);
