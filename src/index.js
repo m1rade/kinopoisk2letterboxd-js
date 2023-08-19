@@ -1,44 +1,44 @@
-import * as cheerio from "cheerio";
-import { getPageFromUrl } from "./helpers/getPageFromUrl.js";
 import { json2csv } from "json-2-csv";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { saveDataToFile } from "./helpers/saveDataToFile.js";
+import { timeout } from "./utils/timeout.js";
 
-const URL = "https://www.kinopoisk.ru/user/13771316/votes/list/vs/vote/page/2";
+const URL = "https://www.kinopoisk.ru/user/13771316/votes/list/vs/vote/page/";
+const films = [];
+
+const LAUNCH_OPTIONS = {
+    headless: false,
+    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    userDataDir: "C:/Users/Laura/AppData/Local/Google/Chrome/User Data/Default",
+};
+const PAGE_LOADING_OPTIONS = {
+    networkIdle2Timeout: 6000,
+    waitUntil: "networkidle2",
+    timeout: 3000000,
+};
+
+// anti-bot setting
+puppeteer.use(StealthPlugin());
 
 (async function main() {
     try {
-        const webpage = await getPageFromUrl(URL);
-        const $ = cheerio.load(webpage);
+        let currPage = 1;
 
-        const films = [];
+        const browser = await puppeteer.launch(LAUNCH_OPTIONS);
+        const page = await browser.newPage();
 
-        $("div.profileFilmsList")
-            .children("div.item")
-            .each((i, el) => {
-                const Title = $(el).find("div.nameEng").text();
-                // skip titles that haven't english name
-                if (Title !== String.fromCharCode(160)) {
-                    const russianTitle = $(el).find("div.nameRus").text();
-
-                    if (!/сериал/gmui.test(russianTitle)) {
-                        const Year = russianTitle.match(/\(((18|19|20)\d{2})\)/)[1];
-                        const WatchedDate = $(el)
-                            .find("div.date")
-                            .text()
-                            .replace(/, \d+:\d+/, "")
-                            .replace(
-                                /(0?[1-9]|[123][0-9])\.(0?[1-9]|[12][0-9]|3[01])\.((19|20)\d\d)/g,
-                                (match, dd, mm, yyyy) => `${yyyy}-${mm}-${dd}`
-                            );
-    
-                        films.push({ Title, Year, WatchedDate });
-                    }
-                }
-            });
+        for (currPage; currPage < 3; currPage++) {
+            await page.goto(URL + currPage, PAGE_LOADING_OPTIONS);
+            await timeout(6000);
+            const content = await page.content();
+            parseDataFromWebpage(content, films);
+        }
 
         const csv = await json2csv(films, { excelBOM: true });
         await saveDataToFile(csv);
+        browser.close();
     } catch (error) {
-        throw new Error(error);
+        throw error;
     }
 })();
